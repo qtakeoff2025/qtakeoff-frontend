@@ -1,31 +1,34 @@
 // src/features/auth/authApi.js
-import { apiSlice } from "../../app/api"; // your base RTK Query api
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-export const authApi = apiSlice.injectEndpoints({
+export const authApi = createApi({
+  reducerPath: "authApi",
+  baseQuery: fetchBaseQuery({
+    baseUrl: "http://localhost:8000/api/users/",
+    prepareHeaders: (headers, { getState }) => {
+      const token = getState().auth.token; // assuming token stored in auth slice
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`); // <- correct format
+      }
+      return headers;
+    },
+  }),
   endpoints: (builder) => ({
-    // Register endpoint
-    registerUser: builder.mutation({
-      query: (userData) => ({
-        url: "users/register/", // <-- append to baseUrl
-        method: "POST",
-        body: userData,
-      }),
-    }),
-    
-    // Login endpoint
     loginUser: builder.mutation({
-      query: (userData) => ({
-        url: "users/login/",
+      query: (credentials) => ({
+        url: "login/",
         method: "POST",
-        body: userData,
+        body: credentials,
       }),
     }),
-
-    
+    registerUser: builder.mutation({
+      query: (data) => ({
+        url: "register/",
+        method: "POST",
+        body: data,
+      }),
+    }),
   }),
 });
 
-export const {
-  useRegisterUserMutation,
-  useLoginUserMutation
-} = authApi;
+export const { useLoginUserMutation, useRegisterUserMutation } = authApi;

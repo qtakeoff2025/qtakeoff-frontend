@@ -4,6 +4,15 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { useLoginUserMutation } from "../features/auth/authApi";
 import { setCredentials } from "../features/auth/authSlice";
+import Button from "../components/Buttons";
+
+const inputClasses =
+  "w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400";
+
+const fields = [
+  { name: "email", placeholder: "Email", type: "email" },
+  { name: "password", placeholder: "Password", type: "password" },
+];
 
 export default function LoginForm() {
   const dispatch = useDispatch();
@@ -22,9 +31,19 @@ export default function LoginForm() {
     e.preventDefault();
     try {
       const res = await loginUser(formData).unwrap();
-      dispatch(setCredentials({ user: res, token: res.token }));
+      console.log("Login response:", res);
+
+      // Save credentials correctly
+      dispatch(
+        setCredentials({ user: res.user, token: res.token.access }) // only access token
+      );
       alert("Login successful!");
-      navigate("/dashboard"); // change to your landing page after login
+
+      // Role-based redirection
+      const role = res.user.role?.toLowerCase();
+      if (role === "user") navigate("/user-dashboard");
+      else if (role === "estimator") navigate("/estimator-dashboard");
+      else navigate("/"); // fallback
     } catch (err) {
       console.error(err);
       alert("Login failed. Check console for details.");
@@ -40,31 +59,22 @@ export default function LoginForm() {
         <h2 className="text-3xl font-bold text-center mb-6">Login</h2>
 
         <div className="space-y-4">
-          <input
-            name="email"
-            type="email"
-            placeholder="Email"
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          <input
-            name="password"
-            type="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
+          {fields.map(({ name, placeholder, type }) => (
+            <input
+              key={name}
+              name={name}
+              type={type}
+              placeholder={placeholder}
+              value={formData[name]}
+              onChange={handleChange}
+              className={inputClasses}
+            />
+          ))}
         </div>
 
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full mt-6 bg-blue-500 text-white py-3 rounded hover:bg-blue-600 transition"
-        >
+        <Button type="submit" isLoading={isLoading}>
           {isLoading ? "Logging in..." : "Login"}
-        </button>
+        </Button>
 
         {error && (
           <p className="text-red-500 mt-4 text-center">

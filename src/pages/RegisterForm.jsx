@@ -4,6 +4,19 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { useRegisterUserMutation } from "../features/auth/authApi";
 import { setCredentials } from "../features/auth/authSlice";
+import Button from "../components/Buttons";
+
+const inputClasses =
+  "w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400";
+
+const fields = [
+  { name: "first_name", placeholder: "First Name", type: "text" },
+  { name: "last_name", placeholder: "Last Name", type: "text" },
+  { name: "username", placeholder: "Username", type: "text" },
+  { name: "email", placeholder: "Email", type: "email" },
+  { name: "password", placeholder: "Password", type: "password" },
+  { name: "password2", placeholder: "Confirm Password", type: "password" },
+];
 
 export default function RegisterForm() {
   const dispatch = useDispatch();
@@ -17,7 +30,7 @@ export default function RegisterForm() {
     username: "",
     password: "",
     password2: "",
-    role: "user", // matches backend
+    role: "user",
   });
 
   const handleChange = (e) =>
@@ -45,70 +58,32 @@ export default function RegisterForm() {
         <h2 className="text-3xl font-bold text-center mb-6">Register</h2>
 
         <div className="space-y-4">
-          <input
-            name="first_name"
-            placeholder="First Name"
-            value={formData.first_name}
-            onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          <input
-            name="last_name"
-            placeholder="Last Name"
-            value={formData.last_name}
-            onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          <input
-            name="username"
-            placeholder="Username"
-            value={formData.username}
-            onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          <input
-            name="email"
-            type="email"
-            placeholder="Email"
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          <input
-            name="password"
-            type="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          <input
-            name="password2"
-            type="password"
-            placeholder="Confirm Password"
-            value={formData.password2}
-            onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
+          {fields.map(({ name, placeholder, type }) => (
+            <input
+              key={name}
+              name={name}
+              type={type}
+              placeholder={placeholder}
+              value={formData[name]}
+              onChange={handleChange}
+              className={inputClasses}
+            />
+          ))}
 
           <select
             name="role"
             value={formData.role}
             onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className={inputClasses}
           >
             <option value="user">User</option>
             <option value="estimator">Estimator</option>
           </select>
         </div>
 
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full mt-6 bg-blue-500 text-white py-3 rounded hover:bg-blue-600 transition"
-        >
-          {isLoading ? "Registering..." : "Register"}
-        </button>
+        <Button type="submit" isLoading={isLoading}>
+          Registers
+        </Button>
 
         {error && (
           <p className="text-red-500 mt-4 text-center">
