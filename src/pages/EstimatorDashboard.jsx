@@ -1,4 +1,6 @@
 // src/pages/EstimatorDashboard.jsx
+import LogOut from "../components/LogOut";
+
 export default function EstimatorDashboard() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
@@ -6,6 +8,7 @@ export default function EstimatorDashboard() {
       <p className="text-gray-700 text-lg">
         Welcome! This is the Estimator Dashboard.
       </p>
+      <LogOut />
     </div>
   );
 }

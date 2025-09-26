@@ -6,9 +6,10 @@ export const authApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: "http://localhost:8000/api/users/",
     prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth.token; // assuming token stored in auth slice
+      const token = getState().auth.token;
+      headers.set("Content-Type", "application/json");
       if (token) {
-        headers.set("Authorization", `Bearer ${token}`); // <- correct format
+        headers.set("Authorization", `Bearer ${token}`);
       }
       return headers;
     },
@@ -28,7 +29,21 @@ export const authApi = createApi({
         body: data,
       }),
     }),
+logoutUser: builder.mutation({
+  query: (refreshToken) => ({
+    url: "logout/",
+    method: "POST",
+    body: { refresh: refreshToken }, // required by serializer
+  }),
+}),
+
+
+
   }),
 });
 
-export const { useLoginUserMutation, useRegisterUserMutation } = authApi;
+export const {
+  useLoginUserMutation,
+  useRegisterUserMutation,
+  useLogoutUserMutation,
+} = authApi;
