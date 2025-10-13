@@ -33,10 +33,12 @@ export default function LoginForm() {
       const res = await loginUser(formData).unwrap();
       console.log("Login response:", res);
 
-      // Save credentials correctly
-      dispatch(
-        setCredentials({ user: res.user, token: res.token.access }) // only access token
-      );
+      // Save access token in Redux
+      dispatch(setCredentials({ user: res.user, token: res.token.access }));
+
+      // ✅ Save access token in localStorage for RTK Query
+      localStorage.setItem("access", res.token.access);
+
       alert("Login successful!");
 
       // Role-based redirection
