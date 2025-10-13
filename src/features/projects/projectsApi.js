@@ -43,9 +43,17 @@ export const projectsApi = createApi({
         method:"DELETE"
       }),
       invalidatesTags:["Projects"]
-    })
+    }),
+    updateProject: builder.mutation({
+      query: ({ projectId, ...data }) => ({
+        url: `update/${projectId}/`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Projects"],
+    }),
 
   }),
 });
 
-export const { useCreateProjectMutation,useGetProjectsQuery, useGetProjectDetailQuery,useDeleteProjectMutation  } = projectsApi;
+export const { useCreateProjectMutation,useGetProjectsQuery, useGetProjectDetailQuery,useDeleteProjectMutation,useUpdateProjectMutation  } = projectsApi;

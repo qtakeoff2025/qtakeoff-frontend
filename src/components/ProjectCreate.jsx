@@ -4,52 +4,72 @@ import {
   useGetProjectsQuery,
   useGetProjectDetailQuery,
   useDeleteProjectMutation,
+  useUpdateProjectMutation,
 } from "../features/projects/projectsApi";
 
 export default function ProjectCreate() {
   const [title, setTitle] = useState("");
-  const [selectedProjectId, setSelectedProjectId] = useState(null); // for viewing details
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const [editTitle, setEditTitle] = useState(""); // for editing
+
   const [createProject, { isLoading: isCreating }] = useCreateProjectMutation();
+  const [updateProject, { isLoading: isUpdating }] = useUpdateProjectMutation();
   const [deleteProject] = useDeleteProjectMutation();
+
   const { data: projects, isLoading, refetch } = useGetProjectsQuery();
 
+  const { data: projectDetail, isLoading: isDetailLoading } =
+    useGetProjectDetailQuery(selectedProjectId, { skip: !selectedProjectId });
+
+  // CREATE
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!title.trim()) return; // Prevent empty submissions
+    if (!title.trim()) return;
 
     try {
       await createProject({ title }).unwrap();
       setTitle("");
-      // refetch is optional since invalidatesTags handles it
       refetch();
+      alert("Project created");
     } catch (err) {
-      console.error("Create project error:", err);
-      alert(err.data?.detail || "Error creating project");
+      console.error(err);
+      alert("Error creating project");
     }
   };
 
+  // DELETE
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this project?")) {
       try {
         await deleteProject(id).unwrap();
         alert("Project deleted");
-        // refetch(); // optional, tags will handle auto update
+        refetch();
       } catch (err) {
-        console.error("Delete project error:", err);
+        console.error(err);
         alert("Error deleting project");
       }
     }
   };
 
-  const { data: projectDetail, isLoading: isDetailLoading } =
-    useGetProjectDetailQuery(
-      selectedProjectId,
-      { skip: !selectedProjectId } // only fetch when a project is selected
-    );
+  // UPDATE
+  const handleUpdate = async (projectId) => {
+    if (!editTitle.trim()) return;
+
+    try {
+      await updateProject({ projectId, title: editTitle }).unwrap(); // <-- pass projectId, not id
+      alert("Project updated");
+      setSelectedProjectId(null);
+      setEditTitle("");
+      refetch();
+    } catch (err) {
+      console.error(err);
+      alert("Error updating project");
+    }
+  };
 
   return (
     <div className="p-4 w-full max-w-md">
-      {/* Create Project Form */}
+      {/* Create Project */}
       <form onSubmit={handleSubmit} className="mb-4">
         <input
           type="text"
@@ -87,7 +107,10 @@ export default function ProjectCreate() {
               <div className="space-x-2">
                 <button
                   className="text-blue-500 hover:underline"
-                  onClick={() => setSelectedProjectId(proj.id)}
+                  onClick={() => {
+                    setSelectedProjectId(proj.id);
+                    setEditTitle(proj.title); // prefill edit input
+                  }}
                 >
                   View Details
                 </button>
@@ -103,16 +126,31 @@ export default function ProjectCreate() {
         </ul>
       )}
 
-      {/* Project Detail */}
+      {/* Project Detail + Edit */}
       {selectedProjectId && (
         <div className="mt-4 p-2 border rounded bg-gray-50">
           <h3 className="font-semibold mb-2">Project Details</h3>
           {isDetailLoading ? (
             <p>Loading details...</p>
           ) : projectDetail ? (
-            <pre className="text-sm">
-              {JSON.stringify(projectDetail, null, 2)}
-            </pre>
+            <div>
+              <pre className="text-sm">
+                {JSON.stringify(projectDetail, null, 2)}
+              </pre>
+              <input
+                type="text"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                className="w-full p-2 border rounded mt-2"
+              />
+              <button
+                className="mt-2 p-2 bg-green-500 hover:bg-green-600 text-white rounded"
+                onClick={() => handleUpdate(selectedProjectId)}
+                disabled={isUpdating || !editTitle.trim()}
+              >
+                {isUpdating ? "Updating..." : "Update Project"}
+              </button>
+            </div>
           ) : (
             <p>No details available</p>
           )}
